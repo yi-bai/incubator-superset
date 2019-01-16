@@ -1114,6 +1114,17 @@ export const controls = {
     description: t('This defines the element to be plotted on the chart'),
   },
 
+  labels: {
+    ...groupByControl,
+    label: t('Labels'),
+    default: null,
+    multi: false,
+    validators: [],
+    description: t('Defines the labels of entities. ' +
+      'Each labels is shown as a specific color on the chart and ' +
+      'has a legend toggle'),
+  },
+
   x: {
     ...metric,
     label: t('X Axis'),
@@ -1128,10 +1139,47 @@ export const controls = {
     description: t('Metric assigned to the [Y] axis'),
   },
 
+  x_column: {
+    type: 'SelectControl',
+    label: 'X Column',
+    default: null,
+    description: t('Metric assigned to the [X] axis'),
+    mapStateToProps: state => ({
+      choices: columnChoices(state.datasource),
+    }),
+  },
+
+  y_column: {
+    type: 'SelectControl',
+    label: 'Y Column',
+    default: null,
+    description: t('Metric assigned to the [Y] axis'),
+    mapStateToProps: state => ({
+      choices: columnChoices(state.datasource),
+    }),
+  },
+
   size: {
     ...metric,
     label: t('Bubble Size'),
     default: null,
+  },
+
+  size_column: {
+    type: 'SelectControl',
+    label: t('Bubble Size'),
+    default: null,
+    description: t('Bubble Size'),
+    mapStateToProps: state => ({
+      choices: columnChoices(state.datasource),
+    }),
+  },
+
+  bubble_use_not_grouped_by: {
+    type: 'CheckboxControl',
+    label: t('use NOT GROUPED BY'),
+    default: false,
+    description: t('Whether to use NOT GROUPED BY'),
   },
 
   url: {

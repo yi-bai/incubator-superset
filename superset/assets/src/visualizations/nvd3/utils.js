@@ -139,7 +139,7 @@ export function generateBubbleTooltipContent({
   let s = '<table>';
   s += (
     `<tr><td style="color: ${point.color};">` +
-      `<strong>${point[entity]}</strong> (${point.group})` +
+     ((entity in point) ? `<strong>${point[entity]}</strong> (${point.group})` : `<strong>${point.group}</strong>`) +
     '</td></tr>'
   );
   s += createHTMLRow(getLabel(xField), xFormatter(point.x));

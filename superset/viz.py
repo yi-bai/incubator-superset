@@ -939,34 +939,68 @@ class BubbleViz(NVD3Viz):
     def query_obj(self):
         form_data = self.form_data
         d = super(BubbleViz, self).query_obj()
-        d['groupby'] = [
-            form_data.get('entity'),
-        ]
-        if form_data.get('series'):
-            d['groupby'].append(form_data.get('series'))
-        self.x_metric = form_data.get('x')
-        self.y_metric = form_data.get('y')
-        self.z_metric = form_data.get('size')
-        self.entity = form_data.get('entity')
-        self.series = form_data.get('series') or self.entity
-        d['row_limit'] = form_data.get('limit')
 
-        d['metrics'] = []
-        if self.z_metric:
-            d['metrics'].append(self.z_metric)
-        d['metrics'].append(self.x_metric)
-        d['metrics'].append(self.y_metric)
-        if not all(d['metrics'] + [self.entity]):
-            raise Exception(_('Pick a metric for x, y and size'))
+        use_group_by = not form_data['bubble_use_not_grouped_by']
+
+        if use_group_by and not all([form_data['entity'], form_data['x'], form_data['y']]):
+            raise Exception(_('Pick a metric for x, y and entity'))
+        if not use_group_by and not all([form_data['x_column'], form_data['y_column']]):
+            raise Exception(_('Pick a column for x and y'))
+
+        self.use_group_by = use_group_by
+
+        if use_group_by:
+            d['groupby'] = [
+                form_data.get('entity'),
+            ]
+            if form_data.get('series'):
+                d['groupby'].append(form_data.get('series'))
+            self.x_metric = form_data.get('x')
+            self.y_metric = form_data.get('y')
+            self.z_metric = form_data.get('size')
+            self.entity = form_data.get('entity')
+            self.series = form_data.get('series') or self.entity
+
+            d['metrics'] = []
+            if self.z_metric:
+                d['metrics'].append(self.z_metric)
+            d['metrics'].append(self.x_metric)
+            d['metrics'].append(self.y_metric)
+            if not all(d['metrics'] + [self.entity]):
+                raise Exception(_('Pick a metric for x, y and size'))
+        else:
+            self.x_column = form_data.get('x_column')
+            self.y_column = form_data.get('y_column')
+            self.z_column = form_data.get('size_column')
+            self.label_column = form_data.get('labels')
+
+            d['columns'] = []
+            if self.z_column:
+                d['columns'].append(self.z_column)
+            d['columns'].append(self.y_column)
+            d['columns'].append(self.x_column)
+            if self.label_column:
+                d['columns'].append(self.label_column)
+            if not all(d['columns']):
+                raise Exception(_('Pick a column for x, y'))
+
+        # common among GROUP BY and NOT GROUPED BY
+        d['row_limit'] = form_data.get('limit')
         return d
 
     def get_data(self, df):
-        df['x'] = df[[utils.get_metric_name(self.x_metric)]]
-        df['y'] = df[[utils.get_metric_name(self.y_metric)]]
-        # Bubble size is fixed to 1 if bubble size is not calculated
-        df['size'] = df[[utils.get_metric_name(self.z_metric)]] if self.z_metric else 1
+        if self.use_group_by:
+            df['x'] = df[[utils.get_metric_name(self.x_metric)]]
+            df['y'] = df[[utils.get_metric_name(self.y_metric)]]
+            # Bubble size is fixed to 1 if bubble size is not calculated
+            df['size'] = df[[utils.get_metric_name(self.z_metric)]] if self.z_metric else 1
+            df['group'] = df[[self.series]]
+        else:
+            df['x'] = df[[self.x_column]]
+            df['y'] = df[[self.y_column]]
+            df['size'] = df[[self.z_column]] if self.z_column else 1
+            df['group'] = df[[self.label_column]] if self.label_column else ""
         df['shape'] = 'circle'
-        df['group'] = df[[self.series]]
 
         series = defaultdict(list)
         for row in df.to_dict(orient='records'):

@@ -4,14 +4,32 @@ export default {
   label: t('Bubble Chart'),
   controlPanelSections: [
     {
-      label: t('Query'),
+      label: t('GROUP BY'),
+      description: t('Use this section if you want a query that aggregates'),
       expanded: true,
       controlSetRows: [
         ['series', 'entity'],
         ['x'],
         ['y'],
-        ['adhoc_filters'],
         ['size'],
+      ],
+    },
+    {
+      label: t('NOT GROUPED BY'),
+      description: t('Use this section if you want to query atomic rows'),
+      expanded: true,
+      controlSetRows: [
+        ['bubble_use_not_grouped_by'],
+        ['labels'],
+        ['x_column', 'y_column'],
+        ['size_column'],
+      ],
+    },
+    {
+      label: t('Query'),
+      expanded: true,
+      controlSetRows: [
+        ['adhoc_filters'],
         ['max_bubble_size'],
         ['limit', null],
       ],
@@ -51,6 +69,15 @@ export default {
       renderTrigger: false,
     },
     size: {
+      validators: [],
+    },
+    x: {
+      validators: [],
+    },
+    y: {
+      validators: [],
+    },
+    entity: {
       validators: [],
     },
   },
